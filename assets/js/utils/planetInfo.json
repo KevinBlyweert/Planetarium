@@ -2,10 +2,11 @@
     {
         "name": "Sun",
         "radius": 695700,
-        "distanceToSun": 0
+        "distanceToSun": 0,
+        "speed":0
     },
     {
-        "name": "Mercure",
+        "name": "Mercury",
         "radius": 2439.7,
         "distanceToSun": 58e6,
         "speed":47.9
@@ -50,6 +51,6 @@
         "name": "Neptune",
         "radius": 24622,
         "distanceToSun": 45e8,
-        "speed":5.4
+        "speed":-5.4
     }
 ]
