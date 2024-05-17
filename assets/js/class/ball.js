@@ -1,28 +1,13 @@
 import { random, randomRGB } from "../utils/utils.js";
 
-class Ball {
-    constructor(x, y, velX, velY, color, size, name = "", appearance, speed = 0) {
+export default class Ball {
+    constructor(x, y, velX, velY, color, size) {
         this.x = x;
         this.y = y;
         this.velX = velX;
         this.velY = velY;
         this.color = color;
         this.size = size;
-        this.name = name;
-        this.appearance = appearance
-        this.speed = speed
-        this.angle = 0,
-        this.distanceToSun = y
-    }
-    draw(ctx) {
-        ctx.beginPath();
-        ctx.fillStyle = this.color;
-        ctx.strokeStyle = this.color;
-        ctx.arc(this.x, this.y, this.size, 0, 2 * Math.PI);
-        (this.appearance == "fill") ? ctx.fill() : ctx.stroke();
-        ctx.fillStyle = "white";
-        ctx.font = `${this.size * 4}px Arial`;
-        ctx.fillText(this.name, this.x + 25, this.y + this.size);
     }
     // update(width, height) {
     //     if (this.x + this.size >= width) {
@@ -65,11 +50,5 @@ class Ball {
     //         }
     //     }
     // }
-    planetCourseUpdate(course) {
-        this.x = course.x + Math.sin(this.angle) * course.size
-        this.y = course.y + Math.cos(this.angle) * course.size
-        this.angle += this.speed * .001
-    }
-}
 
-export default Ball
+}

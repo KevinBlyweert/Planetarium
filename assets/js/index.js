@@ -1,4 +1,4 @@
-import Ball from "./class/ball.js";
+import { Ball, Star, Planet, Course } from "./class/index.js";
 import { random } from "./utils/utils.js";
 
 // setup canvas
@@ -47,10 +47,8 @@ let height = (canvas.height = window.innerHeight);
 
 // loop();
 
-const solarSytem = [];
-const closeUp = [];
-let systemSize = 0;
-let closeUpSystemSize = 0;
+const solarSytem = [], closeUp = [], fullSysCourses = [], closeUpCourses = [];
+let inCloseUp = false, closeUpVisible = false;;
 
 async function createSystem() {
     fetch("./assets/js/utils/planetInfo.json")
@@ -59,57 +57,103 @@ async function createSystem() {
             return res.json();
         })
         .then((data) => {
-            systemSize = data[data.length - 1].distanceToSun;
-            closeUpSystemSize = data[4].distanceToSun
+            const systemSize = data[data.length - 1].distanceToSun;
+            const closeUpSystemSize = data[4].distanceToSun
             data.forEach(item => {
-                const planet = new Ball(width / 2, ((item.distanceToSun * (height - 100)) / systemSize), 0, 0, "yellow", (item.radius * (height - 100)) / systemSize * ((item.name) == "Sun" ? 50 : 1500), item.name, "fill", item.speed);
+                const planet = new Planet(0, ((item.distanceToSun * (height - 100)) / systemSize), 0, 0, "yellow", (item.radius * (height - 100)) / systemSize * ((item.name) == "Sun" ? 50 : 1500), item.name, item.speed, item);
                 solarSytem.push(planet);
+                const course = new Course(width / 2, 50, 0, 0, "#8B9BC1", planet.distanceToSun, planet.name);
+                fullSysCourses.push(course);
                 if (closeUp.length != 5) {
-                    const closePlanet = new Ball(height / 4, (((height / 4) * item.distanceToSun) / closeUpSystemSize), 0, 0, "white", (item.radius * (height / 4)) / closeUpSystemSize * ((item.name) == "Sun" ? 40 : 1000), item.name, "fill", item.speed)
+                    const closePlanet = new Planet(0, (((height / 4) * item.distanceToSun) / closeUpSystemSize), 0, 0, "white", (item.radius * (height / 4)) / closeUpSystemSize * ((item.name) == "Sun" ? 40 : 1000), item.name, item.speed, item)
                     closeUp.push(closePlanet);
+                    const course = new Course(height / 4, (height / 2) + (height / 4), 0, 0, "#8B9BC1", closePlanet.distanceToSun, closePlanet.name);
+                    closeUpCourses.push(course);
                 }
             })
+            addListeners();
             animateSystem();
         })
 }
 
-createSystem()
-
 function animateSystem() {
-    if (solarSytem.length != 0) {
-        ctx.fillStyle = "#000100";
-        ctx.fillRect(0, 0, width, height);
 
-        solarSytem.forEach((planet => {
-            const course = new Ball(width / 2, 50, 0, 0, "#8B9BC1", planet.distanceToSun, "", "stroke");
-            course.draw(ctx);
-            planet.planetCourseUpdate(course);
-            planet.draw(ctx);
-        }));
+    ctx.fillStyle = "#000100";
+    ctx.fillRect(0, 0, width, height);
 
-        // Four first planets close up
+    solarSytem.forEach((planet => {
+        const course = fullSysCourses.find(course => course.planetName == planet.name)
+        course.draw(ctx);
+        planet.planetCourseUpdate(course, ctx);
+    }));
+
+    // Four first planets close up automatically drawn if sufficient place or requested
+    if (width >= height) {
+        closeUpVisible = true;
+        ctx.beginPath();
+        ctx.setLineDash([]);
+        ctx.lineWidth = 1;
         ctx.fillStyle = "#000100";
         ctx.fillRect(0, height - (height / 2), (height / 2), (height / 2));
         ctx.strokeStyle = "#8B9BC1";
         ctx.strokeRect(0, height - (height / 2), (height / 2), (height / 2));
         closeUp.forEach(closePlanet => {
-            const course = new Ball(height / 4, (height / 2) + (height / 4), 0, 0, "#8B9BC1", closePlanet.distanceToSun, "", "stroke");
+            const course = closeUpCourses.find(course => course.planetName == closePlanet.name)
             course.draw(ctx);
-            closePlanet.planetCourseUpdate(course);
-            closePlanet.draw(ctx);
+            closePlanet.planetCourseUpdate(course, ctx);
         })
-        // for (let index = 0; index < 5; index++) {
-        //     const planet = closeUp[index];
-        //     const course = new Ball(height / 4, (height / 2) + (height /4), 0, 0, "#8B9BC1", planet.distanceToSun, "", "stroke");
-        //     course.draw(ctx);
-        //     // planet.planetCourseUpdate(course);
-        //     planet.draw(ctx);
-        // }
     }
     requestAnimationFrame(animateSystem);
 }
 
-window.addEventListener("resize", (e) => {
-    width = (canvas.width = window.innerWidth);
-    height = (canvas.height = window.innerHeight);
-})
+function clickPlanet(planet, x, y, systemToSearch) {
+    const click = (Math.pow((x - planet.x), 2) + Math.pow((y - planet.y), 2)) <= Math.pow(planet.size, 2) ? true : false;
+    planet.onClick(click, ctx);
+    var closeUpPlanet = systemToSearch.find(closePlanet => planet.name == closePlanet.name);
+    closeUpPlanet && closeUpPlanet.onClick(click, ctx);
+}
+
+function hoverCourse(course, x, y, coursesToSearch) {
+    const hover = (Math.pow((x - course.x), 2) + Math.pow((y - course.y), 2)) >= Math.pow(course.size - 5, 2) && (Math.pow((x - course.x), 2) + Math.pow((y - course.y), 2)) <= Math.pow(course.size + 5, 2) ? true : false;
+    course.onHover(hover, ctx);
+    var otherCourse = coursesToSearch.find(findCourse => findCourse.planetName === course.planetName)
+    otherCourse && otherCourse.onHover(hover, ctx);
+}
+function addListeners() {
+    window.addEventListener("resize", (e) => {
+        width = (canvas.width = window.innerWidth);
+        height = (canvas.height = window.innerHeight);
+    });
+    canvas.addEventListener("click", (e) => {
+        var r = canvas.getBoundingClientRect(), x = e.clientX - r.left, y = e.clientY - r.top;
+        if (closeUpVisible) {
+            inCloseUp = (x > 0 && x < height / 2 && y > height / 2 && y < height);
+        }
+        if (!inCloseUp) {
+            solarSytem.forEach(planet => {
+                clickPlanet(planet, x, y, closeUp);
+            });
+        } else {
+            closeUp.forEach(planet => {
+                clickPlanet(planet, x, y, solarSytem);
+            });
+        }
+    });
+    canvas.addEventListener("mousemove", (e) => {
+        var r = canvas.getBoundingClientRect(), x = e.clientX - r.left, y = e.clientY - r.top;
+        if (closeUpVisible) {
+            inCloseUp = (x > 0 && x < height / 2 && y > height / 2 && y < height);
+        }
+        if (!inCloseUp) {
+            fullSysCourses.forEach(course => {
+                hoverCourse(course, x, y, closeUpCourses);
+            });
+        } else {
+            closeUpCourses.forEach(course => {
+                hoverCourse(course, x, y, fullSysCourses);
+            });
+        }
+    })
+}
+
+createSystem()
