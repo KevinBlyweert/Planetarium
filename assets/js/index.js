@@ -1,11 +1,11 @@
-import { Ball, Star, Planet, Course } from "./class/index.js";
+import { Star, Planet, Course } from "./class/index.js";
 import { random } from "./utils/utils.js";
 
 // setup canvas
 
 const canvas = document.querySelector("canvas");
 const ctx = canvas.getContext("2d");
-let width = (canvas.width = window.innerWidth), height = (canvas.height = window.innerHeight), closeUpSide = (width >= height / 2) ? height / 2 : width;
+let width = (canvas.width = window.innerWidth), height = (canvas.height = window.innerHeight), closeUpSideLength = (width >= height / 2) ? height / 2 : width;
 let numberOfStars = 150;
 const dark_blue = "#000106", red = "#F00", light_blue = "#8B9BC1", white = "#FFE";
 // let balls = [];
@@ -48,7 +48,7 @@ const dark_blue = "#000106", red = "#F00", light_blue = "#8B9BC1", white = "#FFE
 // loop();
 
 const solarSytem = [], closeUp = [], fullSysCourses = [], closeUpCourses = [], stars = [];
-let inCloseUp = false, closeUpVisible = false, openCloseUp = false;
+let inCloseUp = false, closeUpVisible = false;
 
 async function createSystem() {
     fetch("./assets/js/utils/planetInfo.json")
@@ -60,16 +60,16 @@ async function createSystem() {
             const systemSize = data[data.length - 1].distanceToSun;
             const closeUpSystemSize = data[4].distanceToSun
             data.forEach(item => {
-                const planet = new Planet(0, ((item.distanceToSun * (height - 100)) / systemSize), 0, 0, white, (item.radius * (height - 100)) / systemSize * ((item.name) == "Sun" ? 50 : 1500), item.name, item.speed, item);
+                const planet = new Planet(0, ((item.distanceToSun * (height - 200)) / systemSize), 0, 0, white, (item.radius * (height - 200)) / systemSize * ((item.name) == "Sun" ? 50 : 1500), item.name, item.speed, item);
                 solarSytem.push(planet);
 
                 const course = new Course(width / 2, 50, 0, 0, light_blue, planet.distanceToSun, planet.name);
                 fullSysCourses.push(course);
 
                 if (closeUp.length != 5) {
-                    const closePlanet = new Planet(0, (((width / 2) * item.distanceToSun) / closeUpSystemSize), 0, 0, white, (item.radius * (closeUpSide / 2)) / closeUpSystemSize * ((item.name) == "Sun" ? 40 : 1000), item.name, item.speed, item)
+                    const closePlanet = new Planet(0, (((width / 2) * item.distanceToSun) / closeUpSystemSize), 0, 0, white, (item.radius * (closeUpSideLength / 2)) / closeUpSystemSize * ((item.name) == "Sun" ? 40 : 1000), item.name, item.speed, item)
                     closeUp.push(closePlanet);
-                    const course = new Course(width / 2, height - (closeUpSide / 2), 0, 0, light_blue, closePlanet.distanceToSun, closePlanet.name);
+                    const course = new Course(width / 2, height - (closeUpSideLength / 2), 0, 0, light_blue, closePlanet.distanceToSun, closePlanet.name);
                     closeUpCourses.push(course);
                 }
             })
@@ -120,15 +120,15 @@ function animateSystem() {
         ctx.setLineDash([]);
         ctx.lineWidth = 1;
         ctx.fillStyle = dark_blue;
-        ctx.fillRect(0, height - closeUpSide, closeUpSide, closeUpSide);
+        ctx.fillRect(0, height - closeUpSideLength, closeUpSideLength, closeUpSideLength);
         ctx.beginPath();
         ctx.strokeStyle = red;
-        ctx.strokeRect(0, height - closeUpSide, closeUpSide, closeUpSide);
+        ctx.strokeRect(0, height - closeUpSideLength, closeUpSideLength, closeUpSideLength);
         closeUp.forEach(closePlanet => {
             const course = closeUpCourses.find(course => course.planetName == closePlanet.name);
-            course.x = closeUpSide / 2;
-            course.y = height - closeUpSide / 2;
-            course.size = (closePlanet.distanceToSun * closeUpSide / 2) / closeUp[closeUp.length-1].distanceToSun;
+            course.x = closeUpSideLength / 2;
+            course.y = height - closeUpSideLength / 2;
+            course.size = (closePlanet.distanceToSun * closeUpSideLength / 2) / closeUp[closeUp.length-1].distanceToSun;
             course.draw(ctx);
             closePlanet.planetCourseUpdate(course, ctx);
         })
@@ -144,14 +144,14 @@ function clickPlanet(planet, x, y, systemToSearch) {
 }
 
 function hoverCourse(course, x, y, coursesToSearch) {
-    const hover = (Math.pow((x - course.x), 2) + Math.pow((y - course.y), 2)) >= Math.pow(course.size - 2, 2) && (Math.pow((x - course.x), 2) + Math.pow((y - course.y), 2)) <= Math.pow(course.size + 2, 2) ? true : false;
+    const hover = (Math.pow((x - course.x), 2) + Math.pow((y - course.y), 2)) >= Math.pow(course.size - 3, 2) && (Math.pow((x - course.x), 2) + Math.pow((y - course.y), 2)) <= Math.pow(course.size + 3, 2) ? true : false;
     course.onHover(hover, ctx);
     var otherCourse = coursesToSearch.find(findCourse => findCourse.planetName === course.planetName)
     otherCourse && otherCourse.onHover(hover, ctx);
 }
 
 function selectPlanetWithCourse(course, x, y, system, otherSystem) {
-    if ((Math.pow((x - course.x), 2) + Math.pow((y - course.y), 2)) >= Math.pow(course.size - 2, 2) && (Math.pow((x - course.x), 2) + Math.pow((y - course.y), 2)) <= Math.pow(course.size + 2, 2)) {
+    if ((Math.pow((x - course.x), 2) + Math.pow((y - course.y), 2)) >= Math.pow(course.size - 3, 2) && (Math.pow((x - course.x), 2) + Math.pow((y - course.y), 2)) <= Math.pow(course.size + 3, 2)) {
         const foundPlanet = system.find(item => item.name == course.planetName);
         foundPlanet.onClick(true, ctx);
         var otherPlanet = otherSystem.find(closePlanet => foundPlanet.name == closePlanet.name);
@@ -163,7 +163,7 @@ function addListeners() {
     window.addEventListener("resize", (e) => {
         width = (canvas.width = window.innerWidth);
         height = (canvas.height = window.innerHeight);
-        closeUpSide = (width >= height / 2) ? height / 2 : width;
+        closeUpSideLength = (width >= height / 2) ? height / 2 : width;
         closeUpVisible = (width > height) ? true : false;
     });
     canvas.addEventListener("click", (e) => {
@@ -185,6 +185,7 @@ function addListeners() {
             closeUpCourses.forEach(course => {
                 selectPlanetWithCourse(course, x, y, closeUp, solarSytem);
             });
+            closeUpVisible = true;
         }
     });
     canvas.addEventListener("mousemove", (e) => {
