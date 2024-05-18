@@ -5,9 +5,9 @@ import { random } from "./utils/utils.js";
 
 const canvas = document.querySelector("canvas");
 const ctx = canvas.getContext("2d");
-let width = (canvas.width = window.innerWidth);
-let height = (canvas.height = window.innerHeight);
+let width = (canvas.width = window.innerWidth), height = (canvas.height = window.innerHeight), closeUpSide = (width >= height / 2) ? height / 2 : width;
 let numberOfStars = 150;
+const dark_blue = "#000106", red = "#F00", light_blue = "#8B9BC1", white = "#FFE";
 // let balls = [];
 
 // while (balls.length < 20) {
@@ -48,7 +48,7 @@ let numberOfStars = 150;
 // loop();
 
 const solarSytem = [], closeUp = [], fullSysCourses = [], closeUpCourses = [], stars = [];
-let inCloseUp = false, closeUpVisible = false;;
+let inCloseUp = false, closeUpVisible = false, openCloseUp = false;
 
 async function createSystem() {
     fetch("./assets/js/utils/planetInfo.json")
@@ -60,17 +60,16 @@ async function createSystem() {
             const systemSize = data[data.length - 1].distanceToSun;
             const closeUpSystemSize = data[4].distanceToSun
             data.forEach(item => {
-                const planet = new Planet(0, ((item.distanceToSun * (height - 100)) / systemSize), 0, 0, "yellow", (item.radius * (height - 100)) / systemSize * ((item.name) == "Sun" ? 50 : 1500), item.name, item.speed, item);
+                const planet = new Planet(0, ((item.distanceToSun * (height - 100)) / systemSize), 0, 0, white, (item.radius * (height - 100)) / systemSize * ((item.name) == "Sun" ? 50 : 1500), item.name, item.speed, item);
                 solarSytem.push(planet);
 
-                const course = new Course(width / 2, 50, 0, 0, "#8B9BC1", planet.distanceToSun, planet.name);
+                const course = new Course(width / 2, 50, 0, 0, light_blue, planet.distanceToSun, planet.name);
                 fullSysCourses.push(course);
 
                 if (closeUp.length != 5) {
-                    const closePlanet = new Planet(0, (((height / 4) * item.distanceToSun) / closeUpSystemSize), 0, 0, "white", (item.radius * (height / 4)) / closeUpSystemSize * ((item.name) == "Sun" ? 40 : 1000), item.name, item.speed, item)
+                    const closePlanet = new Planet(0, (((width / 2) * item.distanceToSun) / closeUpSystemSize), 0, 0, white, (item.radius * (closeUpSide / 2)) / closeUpSystemSize * ((item.name) == "Sun" ? 40 : 1000), item.name, item.speed, item)
                     closeUp.push(closePlanet);
-
-                    const course = new Course(height / 4, (height / 2) + (height / 4), 0, 0, "#8B9BC1", closePlanet.distanceToSun, closePlanet.name);
+                    const course = new Course(width / 2, height - (closeUpSide / 2), 0, 0, light_blue, closePlanet.distanceToSun, closePlanet.name);
                     closeUpCourses.push(course);
                 }
             })
@@ -79,10 +78,10 @@ async function createSystem() {
                 stars.push(star);
                 setTimeout(() => {
                     star.toShine();
-                }, random(0, 3000));
+                }, random(1, 3000));
                 setInterval(() => {
                     star.toShine();
-                }, random(41000, 50000));
+                }, random(35000, 45000));
             }
 
             addListeners();
@@ -92,12 +91,20 @@ async function createSystem() {
 
 function animateSystem() {
 
-    ctx.fillStyle = "#000100";
+    ctx.fillStyle = dark_blue;
     ctx.fillRect(0, 0, width, height);
 
     stars.forEach(star => {
         star.draw(ctx);
     });
+
+    if (closeUpVisible) {
+        ctx.beginPath();
+        ctx.lineWidth = 1;
+        ctx.setLineDash([]);
+        ctx.strokeStyle = red;
+        ctx.strokeRect(width / 2 - 50, 0, 100, 100);
+    }
 
     solarSytem.forEach((planet => {
         const course = fullSysCourses.find(course => course.planetName == planet.name)
@@ -107,18 +114,21 @@ function animateSystem() {
     }));
 
     // Four first planets close up automatically drawn if sufficient place or requested
-    if (width >= height) {
+    if (width >= height || closeUpVisible) {
         closeUpVisible = true;
         ctx.beginPath();
         ctx.setLineDash([]);
         ctx.lineWidth = 1;
-        ctx.fillStyle = "#000100";
-        ctx.fillRect(0, height - (height / 2), (height / 2), (height / 2));
-        ctx.strokeStyle = "#8B9BC1";
-        ctx.strokeRect(0, height - (height / 2), (height / 2), (height / 2));
+        ctx.fillStyle = dark_blue;
+        ctx.fillRect(0, height - closeUpSide, closeUpSide, closeUpSide);
+        ctx.beginPath();
+        ctx.strokeStyle = red;
+        ctx.strokeRect(0, height - closeUpSide, closeUpSide, closeUpSide);
         closeUp.forEach(closePlanet => {
             const course = closeUpCourses.find(course => course.planetName == closePlanet.name);
-            course.x = height / 4;
+            course.x = closeUpSide / 2;
+            course.y = height - closeUpSide / 2;
+            course.size = (closePlanet.distanceToSun * closeUpSide / 2) / closeUp[closeUp.length-1].distanceToSun;
             course.draw(ctx);
             closePlanet.planetCourseUpdate(course, ctx);
         })
@@ -134,16 +144,16 @@ function clickPlanet(planet, x, y, systemToSearch) {
 }
 
 function hoverCourse(course, x, y, coursesToSearch) {
-    const hover = (Math.pow((x - course.x), 2) + Math.pow((y - course.y), 2)) >= Math.pow(course.size - 5, 2) && (Math.pow((x - course.x), 2) + Math.pow((y - course.y), 2)) <= Math.pow(course.size + 5, 2) ? true : false;
+    const hover = (Math.pow((x - course.x), 2) + Math.pow((y - course.y), 2)) >= Math.pow(course.size - 2, 2) && (Math.pow((x - course.x), 2) + Math.pow((y - course.y), 2)) <= Math.pow(course.size + 2, 2) ? true : false;
     course.onHover(hover, ctx);
     var otherCourse = coursesToSearch.find(findCourse => findCourse.planetName === course.planetName)
     otherCourse && otherCourse.onHover(hover, ctx);
 }
 
-function selectPlanetWithCourse(course,x,y,system,otherSystem) {
-    if ((Math.pow((x - course.x), 2) + Math.pow((y - course.y), 2)) >= Math.pow(course.size - 5, 2) && (Math.pow((x - course.x), 2) + Math.pow((y - course.y), 2)) <= Math.pow(course.size + 5, 2)) {
+function selectPlanetWithCourse(course, x, y, system, otherSystem) {
+    if ((Math.pow((x - course.x), 2) + Math.pow((y - course.y), 2)) >= Math.pow(course.size - 2, 2) && (Math.pow((x - course.x), 2) + Math.pow((y - course.y), 2)) <= Math.pow(course.size + 2, 2)) {
         const foundPlanet = system.find(item => item.name == course.planetName);
-        foundPlanet.onClick(true,ctx);
+        foundPlanet.onClick(true, ctx);
         var otherPlanet = otherSystem.find(closePlanet => foundPlanet.name == closePlanet.name);
         otherPlanet && otherPlanet.onClick(true, ctx);
     }
@@ -153,6 +163,8 @@ function addListeners() {
     window.addEventListener("resize", (e) => {
         width = (canvas.width = window.innerWidth);
         height = (canvas.height = window.innerHeight);
+        closeUpSide = (width >= height / 2) ? height / 2 : width;
+        closeUpVisible = (width > height) ? true : false;
     });
     canvas.addEventListener("click", (e) => {
         var r = canvas.getBoundingClientRect(), x = e.clientX - r.left, y = e.clientY - r.top;
@@ -164,14 +176,14 @@ function addListeners() {
                 clickPlanet(planet, x, y, closeUp);
             });
             fullSysCourses.forEach(course => {
-                selectPlanetWithCourse(course,x,y,solarSytem,closeUp);
+                selectPlanetWithCourse(course, x, y, solarSytem, closeUp);
             });
         } else {
             closeUp.forEach(planet => {
                 clickPlanet(planet, x, y, solarSytem);
             });
             closeUpCourses.forEach(course => {
-                selectPlanetWithCourse(course,x,y,closeUp,solarSytem);
+                selectPlanetWithCourse(course, x, y, closeUp, solarSytem);
             });
         }
     });
@@ -180,6 +192,8 @@ function addListeners() {
         if (closeUpVisible) {
             inCloseUp = (x > 0 && x < height / 2 && y > height / 2 && y < height);
         }
+        closeUpVisible = (width <= height) ? (x >= width / 2 - 50 && x <= width / 2 + 50 && y >= 0 && y <= 100) : true;
+
         if (!inCloseUp) {
             fullSysCourses.forEach(course => {
                 hoverCourse(course, x, y, closeUpCourses);
@@ -192,4 +206,4 @@ function addListeners() {
     })
 }
 
-createSystem()
+createSystem();

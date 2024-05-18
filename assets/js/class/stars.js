@@ -6,32 +6,29 @@ export default class Star extends Ball {
     }
     toShine() {
         setTimeout(() => {
-            this.color = "rgba(255,255,255,0)";
-        }, 1000);
-        setTimeout(() => {
             this.color = "rgba(255,255,255,.2)";
+        }, 100);
+        setTimeout(() => {
+            this.color = "rgba(255,255,255,.6)";
         }, 6000);
         setTimeout(() => {
-            this.color = "rgba(255,255,255,.6)";
+            this.color = "rgba(255,255,255,.8)";
         }, 11000);
         setTimeout(() => {
-            this.color = "rgba(255,255,255,.8)";
+            this.color = "rgba(255,255,255,1)";
         }, 16000);
         setTimeout(() => {
-            this.color = "rgba(255,255,255,1)";
+            this.color = "rgba(255,255,255,.8)";
         }, 21000);
         setTimeout(() => {
-            this.color = "rgba(255,255,255,.8)";
+            this.color = "rgba(255,255,255,.6)";
         }, 26000);
         setTimeout(() => {
-            this.color = "rgba(255,255,255,.6)";
+            this.color = "rgba(255,255,255,.2)";
         }, 31000);
         setTimeout(() => {
-            this.color = "rgba(255,255,255,.2)";
-        }, 36000);
-        setTimeout(() => {
             this.color = "rgba(255,255,255,0)";
-        }, 41000);
+        }, 36000);
     }
     draw(ctx) {
         ctx.beginPath();

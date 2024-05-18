@@ -17,9 +17,9 @@ export default class Planet extends Ball {
         ctx.fill();
         ctx.fillStyle = "white";
         ctx.font = `${this.size * 4}px Arial`;
-        ctx.fillText(this.name, this.x + 25, this.y + this.size);
+        ctx.fillText(this.name, this.x + 25, this.y >= this.size * 2.5 ? this.y + this.size : this.size * 3);
     }
-    planetCourseUpdate(course,ctx) {
+    planetCourseUpdate(course, ctx) {
         this.x = course.x + Math.sin(this.angle) * course.size;
         this.y = course.y + Math.cos(this.angle) * course.size;
         this.angle += this.speed * .001;
