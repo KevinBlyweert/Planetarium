@@ -7,7 +7,7 @@ const canvas = document.querySelector("canvas");
 const ctx = canvas.getContext("2d");
 let width = (canvas.width = window.innerWidth), height = (canvas.height = window.innerHeight), closeUpSideLength = (width >= height / 2) ? height / 2 : width;
 let numberOfStars = 150;
-const dark_blue = "#000106", red = "#F00", light_blue = "#8B9BC1", white = "#FFE";
+const dark_blue = "#101017", red = "#F00", light_blue = "#8B9BC1", white = "#FFE";
 // let balls = [];
 
 // while (balls.length < 20) {
@@ -60,21 +60,21 @@ async function createSystem() {
             const systemSize = data[data.length - 1].distanceToSun;
             const closeUpSystemSize = data[4].distanceToSun
             data.forEach(item => {
-                const planet = new Planet(0, ((item.distanceToSun * (height - 200)) / systemSize), 0, 0, white, (item.radius * (height - 200)) / systemSize * ((item.name) == "Sun" ? 50 : 1500), item.name, item.speed, item);
+                const planet = new Planet(0, ((item.distanceToSun * (height - 200)) / systemSize), 0, 0, white, (item.radius * (height - 200)) / systemSize * ((item.name) == "Sun" ? 50 : 1500), item.name, item.revolutionSpeed, item);
                 solarSytem.push(planet);
 
                 const course = new Course(width / 2, 50, 0, 0, light_blue, planet.distanceToSun, planet.name);
                 fullSysCourses.push(course);
 
                 if (closeUp.length != 5) {
-                    const closePlanet = new Planet(0, (((width / 2) * item.distanceToSun) / closeUpSystemSize), 0, 0, white, (item.radius * (closeUpSideLength / 2)) / closeUpSystemSize * ((item.name) == "Sun" ? 40 : 1000), item.name, item.speed, item)
+                    const closePlanet = new Planet(0, (((width / 2) * item.distanceToSun) / closeUpSystemSize), 0, 0, white, (item.radius * (closeUpSideLength / 2)) / closeUpSystemSize * ((item.name) == "Sun" ? 40 : 1000), item.name, item.revolutionSpeed, item)
                     closeUp.push(closePlanet);
                     const course = new Course(width / 2, height - (closeUpSideLength / 2), 0, 0, light_blue, closePlanet.distanceToSun, closePlanet.name);
                     closeUpCourses.push(course);
                 }
             })
             for (let index = 0; index < numberOfStars; index++) {
-                const star = new Star(random(-width / 2, width * 1.5), random(0, height), 0, 0, "#000", random(1, 3));
+                const star = new Star(random(-width / 2, width * 1.5), random(0, height), 0, 0, dark_blue, random(1, 3));
                 stars.push(star);
                 setTimeout(() => {
                     star.toShine();
@@ -128,11 +128,14 @@ function animateSystem() {
             const course = closeUpCourses.find(course => course.planetName == closePlanet.name);
             course.x = closeUpSideLength / 2;
             course.y = height - closeUpSideLength / 2;
-            course.size = (closePlanet.distanceToSun * closeUpSideLength / 2) / closeUp[closeUp.length-1].distanceToSun;
+            course.size = (closePlanet.distanceToSun * closeUpSideLength / 2) / closeUp[closeUp.length - 1].distanceToSun;
             course.draw(ctx);
             closePlanet.planetCourseUpdate(course, ctx);
         })
     }
+    solarSytem.forEach(planet => {
+        planet.selected && showPlanetInfo(planet);
+    })
     requestAnimationFrame(animateSystem);
 }
 
@@ -141,6 +144,7 @@ function clickPlanet(planet, x, y, systemToSearch) {
     planet.onClick(click, ctx);
     var closeUpPlanet = systemToSearch.find(closePlanet => planet.name == closePlanet.name);
     closeUpPlanet && closeUpPlanet.onClick(click, ctx);
+
 }
 
 function hoverCourse(course, x, y, coursesToSearch) {
@@ -156,6 +160,40 @@ function selectPlanetWithCourse(course, x, y, system, otherSystem) {
         foundPlanet.onClick(true, ctx);
         var otherPlanet = otherSystem.find(closePlanet => foundPlanet.name == closePlanet.name);
         otherPlanet && otherPlanet.onClick(true, ctx);
+    }
+}
+
+function showPlanetInfo(planet) {
+    if (planet.selected) {
+        const planetPopUP = { rectWidth: 300, rectHeight: 160, posX: width / 2 - 300 / 2, posY: height / 2 - 150 / 2 };
+        ctx.beginPath();
+        ctx.roundRect(planetPopUP.posX, planetPopUP.posY, planetPopUP.rectWidth, planetPopUP.rectHeight, 10);
+        ctx.fillStyle = "#101720";
+        ctx.strokeStyle = light_blue;
+        ctx.fill();
+        ctx.lineWidth = 1;
+        ctx.setLineDash([]);
+        ctx.stroke();
+        ctx.beginPath();
+        ctx.fillStyle = white;
+        ctx.font = "bold 40px Arial"
+        ctx.fillText(planet.name, planetPopUP.posX + 40, planetPopUP.posY + 50);
+        ctx.beginPath();
+        ctx.fillStyle = white;
+        ctx.font = "15px Arial"
+        ctx.fillText("Radius: \t\t\t\t" + planet.planetInfo.radius + " km", planetPopUP.posX + 20, planetPopUP.posY + 80);
+        if (planet.name != "Sun") {
+            ctx.beginPath();
+            ctx.fillStyle = white;
+            ctx.font = "15px Arial"
+            ctx.fillText("Distance to Sun: \t\t\t\t" + planet.planetInfo.distanceToSun / 1e6 + " millions km", planetPopUP.posX + 20, planetPopUP.posY + 100);
+            ctx.beginPath();
+            ctx.fillStyle = white;
+            ctx.font = "15px Arial"
+            ctx.fillText("Relative speed: \t\t\t\t" + planet.planetInfo.revolutionSpeed + " km/h", planetPopUP.posX + 20, planetPopUP.posY + 120);
+            const daysToRevolve = (Math.PI * 2 * planet.planetInfo.distanceToSun) / (planet.planetInfo.revolutionSpeed * 24);
+            ctx.fillText("(" + Math.round(daysToRevolve * 1e2) / 1e2 + " Earth days for a revolution)", planetPopUP.posX + 20, planetPopUP.posY + 140);
+        }
     }
 }
 

@@ -3,54 +3,63 @@
         "name": "Sun",
         "radius": 695700,
         "distanceToSun": 0,
-        "speed":0
+        "rotationSpeed":0,
+        "revolutionSpeed":0
     },
     {
         "name": "Mercury",
         "radius": 2439.7,
         "distanceToSun": 58e6,
-        "speed":47.9
+        "rotationSpeed":47.9,
+        "revolutionSpeed":172.8e3
     },
     {
         "name": "Venus",
         "radius": 6051.8,
         "distanceToSun": 108e6,
-        "speed":35
+        "rotationSpeed":35,
+        "revolutionSpeed":126e3
     },
     {
         "name": "Earth",
         "radius": 6371,
         "distanceToSun": 150e6,
-        "speed":29.8
+        "rotationSpeed":29.8,
+        "revolutionSpeed":104.4e3
     },
     {
         "name": "Mars",
         "radius": 3389.5,
         "distanceToSun": 228e6,
-        "speed":24.1
+        "rotationSpeed":24.1,
+        "revolutionSpeed":86.4e3
     },
     {
         "name": "Jupiter",
         "radius": 69911,
         "distanceToSun": 778e6,
-        "speed":13.1
+        "rotationSpeed":13.1,
+        "revolutionSpeed":46.8e3
     },
     {
         "name": "Saturn",
         "radius": 58232,
         "distanceToSun": 1430e6,
-        "speed":9.7
+        "rotationSpeed":9.7,
+        "revolutionSpeed":36e3
     },
     {
         "name": "Uranus",
         "radius": 25362,
         "distanceToSun": 2870e6,
-        "speed":6.8
+        "rotationSpeed":6.8,
+        "revolutionSpeed":25.2e3
     },
     {
         "name": "Neptune",
         "radius": 24622,
         "distanceToSun": 45e8,
-        "speed":-5.4
+        "rotationSpeed":-5.4,
+        "revolutionSpeed":-18e3
     }
 ]
