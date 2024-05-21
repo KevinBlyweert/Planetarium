@@ -192,7 +192,7 @@ function showPlanetInfo(planet) {
             ctx.font = "15px Arial"
             ctx.fillText("Relative speed: \t\t\t\t" + planet.planetInfo.revolutionSpeed + " km/h", planetPopUP.posX + 20, planetPopUP.posY + 120);
             const daysToRevolve = (Math.PI * 2 * planet.planetInfo.distanceToSun) / (planet.planetInfo.revolutionSpeed * 24);
-            ctx.fillText("(" + Math.round(daysToRevolve * 1e2) / 1e2 + " Earth days for a revolution)", planetPopUP.posX + 20, planetPopUP.posY + 140);
+            ctx.fillText("(" + Math.round(daysToRevolve * 1e2) / 1e2 + " Earth days for a fullrevolution)", planetPopUP.posX + 20, planetPopUP.posY + 140);
         }
     }
 }
