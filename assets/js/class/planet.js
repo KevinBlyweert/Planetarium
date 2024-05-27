@@ -22,13 +22,13 @@ export default class Planet extends Ball {
     planetCourseUpdate(course, ctx) {
         this.x = course.x + Math.sin(this.angle) * course.size;
         this.y = course.y + Math.cos(this.angle) * course.size;
-        this.angle += this.speed * .000001;
+        this.angle += this.speed * .0000001;
         // this.angle += this.name != "Sun" && 2 * Math.PI / (2 * Math.PI * course.size);
         // this.angle += Math.tan((this.speed * 24) / course.size)*.001;
         this.draw(ctx);
     }
     onClick(click, ctx) {
-        this.color = click ? "blue" : this.originColor;
+        // this.color = click ? "blue" : this.originColor;
         this.draw(ctx);
         this.selected = click;
     }
